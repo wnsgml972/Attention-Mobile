@@ -319,6 +319,12 @@ public class Main_Friend_Message_Activity extends AppCompatActivity implements V
             } else {
                 Toast.makeText(getApplicationContext(), "read room success!!", Toast.LENGTH_SHORT).show();
                 Log.i(Values.TAG,"ROOM UUID : " + thisroom.getRoomUUID() + "  THISROOM.GETUSERUUID.GET(0) : " + thisroom.getUserUUIDs().get(0));
+                for(int i=0; i<MainActivity.rooms.size(); i++){
+                    Room mRoom = MainActivity.rooms.get(i);
+                    if(mRoom.getRoomUUID().equals(P2PChatUUID)){
+                        P
+                    }
+                }
                 MainActivity.rooms.add(thisroom);
                 room = thisroom;
 
