@@ -66,10 +66,8 @@ public class Main_Friend_Message_Activity extends AppCompatActivity implements V
     private SimpleDateFormat simpleDataFormat;
     private Date date;
     private String currentTime;
-    private boolean isPersonalChatting = true;//1:1채팅
     private String P2PChatUUID;
     private Room room;
-    public static boolean isMessageActivityRunning = false;
     private ServiceConnection connection = new ServiceConnection() {            //@@
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
@@ -99,11 +97,7 @@ public class Main_Friend_Message_Activity extends AppCompatActivity implements V
                 case Values.CHATTING_MESSAGE_RECEIVE:
 
                     ChatActivity_RecyclerView_Item item = (ChatActivity_RecyclerView_Item)msg.obj;
-                    if (item.getSender_uuid().equals(Values.myUUID)) {
-                        item.setItemViewType(1);//1이 오른쪽(내거)
-                    } else {
-                        item.setItemViewType(0);
-                    }
+
                     for(User user : MainActivity.users){
                         if(user.getUuid().equals(item.getSender_uuid())){
                             item.setSender_name(user.getName());
@@ -125,7 +119,6 @@ public class Main_Friend_Message_Activity extends AppCompatActivity implements V
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        isMessageActivityRunning = true;
         setContentView(R.layout.activity_main_friend_message);
 
         initEmoticon();
@@ -163,7 +156,7 @@ public class Main_Friend_Message_Activity extends AppCompatActivity implements V
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        isMessageActivityRunning = false;
+        room.setRoomVisible(false);
         unbindService(connection);
 
         try {
@@ -319,14 +312,20 @@ public class Main_Friend_Message_Activity extends AppCompatActivity implements V
             } else {
                 Toast.makeText(getApplicationContext(), "read room success!!", Toast.LENGTH_SHORT).show();
                 Log.i(Values.TAG,"ROOM UUID : " + thisroom.getRoomUUID() + "  THISROOM.GETUSERUUID.GET(0) : " + thisroom.getUserUUIDs().get(0));
+                boolean isRoomExist = false;
+
+                room = thisroom;
                 for(int i=0; i<MainActivity.rooms.size(); i++){
                     Room mRoom = MainActivity.rooms.get(i);
                     if(mRoom.getRoomUUID().equals(P2PChatUUID)){
-                        P
+                        MainActivity.rooms.set(i, room);
+                        isRoomExist = true;
+                        break;
                     }
                 }
-                MainActivity.rooms.add(thisroom);
-                room = thisroom;
+                if(!isRoomExist){
+                    MainActivity.rooms.add(room);
+                }
 
             }
         } catch (Exception e) {
@@ -334,13 +333,16 @@ public class Main_Friend_Message_Activity extends AppCompatActivity implements V
             room = new Room(P2PChatUUID);
             room.addUser(user.getUuid());
             MainActivity.rooms.add(room);
-            Toast.makeText(getApplicationContext(), "add new  success!!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "add new room!!", Toast.LENGTH_SHORT).show();
         }
+
+        room.setRoomVisible(true);
         chatActivity_recyclerView_items = room.getItems();
+
         chatActivity_recyclerView_adapter = new ChatActivity_RecyclerView_Adapter(getApplicationContext(), chatActivity_recyclerView_items);
         chatActivity_recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false));
         chatActivity_recyclerView.setAdapter(chatActivity_recyclerView_adapter);
-
+        chatActivity_recyclerView_adapter.notifyDataSetChanged();
         //스크롤
         chatActivity_recyclerView.scrollToPosition(chatActivity_recyclerView_adapter.getItemCount() - 1);
 

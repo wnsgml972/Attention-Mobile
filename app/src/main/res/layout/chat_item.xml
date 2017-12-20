@@ -30,9 +30,8 @@
 
 
         <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
 
             <FrameLayout
@@ -66,8 +65,13 @@
                     android:layout_marginLeft="55dp"
                     android:layout_marginTop="39dp" />
             </FrameLayout>
-        </RelativeLayout>
 
+        </RelativeLayout>
+        <TextView
+            android:id="@+id/messageTimeTextView_you"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"/>
 
     </LinearLayout>
 </RelativeLayout>

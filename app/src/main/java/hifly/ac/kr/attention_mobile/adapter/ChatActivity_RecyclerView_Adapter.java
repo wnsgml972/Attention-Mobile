@@ -36,6 +36,10 @@ public class ChatActivity_RecyclerView_Adapter extends RecyclerView.Adapter<Recy
             return VIEW_TYPE_ME;
         }
     }
+    public void addItem(ChatActivity_RecyclerView_Item item){
+        list.add(item);
+        notifyItemInserted(list.size()-1);
+    }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -91,12 +95,14 @@ public class ChatActivity_RecyclerView_Adapter extends RecyclerView.Adapter<Recy
         public TextView chat_name;
         public TextView chat_content;
         public ImageView imageView;
-
+        public TextView messageTimeTextView;
         public ViewHolder_you(View itemView) {
             super(itemView);
             chat_name = (TextView)itemView.findViewById(R.id.chat_item_name);
             chat_content = (TextView)itemView.findViewById(R.id.chat_item_content);
             imageView = (ImageView)itemView.findViewById(R.id.chat_image_item_content_you);
+            messageTimeTextView = (TextView)itemView.findViewById(R.id.messageTimeTextView);
+
         }
     }
 

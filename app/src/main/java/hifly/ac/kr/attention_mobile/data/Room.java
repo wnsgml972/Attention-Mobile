@@ -14,9 +14,10 @@ import lombok.Setter;
 @Setter
 @Getter
 public class Room implements Serializable{
-    String roomUUID;
-    Vector<String> userUUIDs;
-    Vector<ChatActivity_RecyclerView_Item> items;
+    private String roomUUID;
+    private Vector<String> userUUIDs;
+    private Vector<ChatActivity_RecyclerView_Item> items;
+    private boolean isRoomVisible = false;
     public Room(String roomUUID){
         userUUIDs = new Vector<String>();
         items = new Vector<ChatActivity_RecyclerView_Item>();
