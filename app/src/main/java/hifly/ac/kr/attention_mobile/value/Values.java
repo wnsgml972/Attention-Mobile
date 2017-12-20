@@ -38,6 +38,16 @@ public class Values {
     public static final String COME_AGAIN_PROTOCOL = "COME_AGAIN_PROTOCOL";
     public static final String CHATTING_MESSAGE_PROTOCOL = "CHATTING_MESSAGE_PROTOCOL";
 
+    //준희추가 프로토콜
+    public static final String PROFILE_INSERT_PROTOCOL = "PROFILE_INSERT_PROTOCOL";
+    public static final String PROFILE_GET_PROTOCOL = "PROFILE_GET_PROTOCOL";
+    public static final String USER_REMOVE_PROTOCOL = "USER_REMOVE_PROTOCOL";
+    public static final String ROOM_REMOVE_PROTOCOL = "ROOM_REMOVE_PROTOCOL";
+    public static final String ROOM_FAIL_PROTOCOL = "ROOM_FAIL_PROTOCOL";
+    public static final String ROOM_FILE_PROTOCOL = "ROOM_FILE_PROTOCOL";
+    public static final String PROFILE_INSERT_PERFORM = "PROFILE_INSERT_PERFORM";
+    public static final String PROFILE_GO = "PROFILE_GO";
+
     public static final String SPLIT_MESSAGE = "@SEGMENT@";
 
     public static final int USER_ENROLL_CHECK = 1000;
