@@ -22,6 +22,7 @@ public class Call_Thread extends Thread{
     private byte audioBuffer[];
     private int BUFFER_SIZE;
     int count=0;
+    public boolean isrunning = true;
     public Call_Thread(String userIP,int userPort){
         Log.i(Values.TAG,userIP + " " + userPort + "@@@CALL");
         this.connect_IP = userIP;
@@ -53,7 +54,7 @@ public class Call_Thread extends Thread{
             e.getStackTrace();
         }
         Log.i(Values.TAG, "sending");
-        while(true) {
+        while(isrunning) {
             try {
                 int read = audioRecord.read(audioBuffer, 0, audioBuffer.length);
                 if(count==100) {
@@ -69,6 +70,7 @@ public class Call_Thread extends Thread{
                 return;
             }
         }
+        datagramSocket.close();
     }
 
 

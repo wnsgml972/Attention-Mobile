@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -33,6 +35,7 @@ import java.util.List;
 import hifly.ac.kr.attention_mobile.R;
 import hifly.ac.kr.attention_mobile.adapter.Main_Configuration_RecyclerView_Adapter;
 import hifly.ac.kr.attention_mobile.adapter_item.Main_Configuration_RecyclerView_Item;
+import hifly.ac.kr.attention_mobile.data.User;
 import hifly.ac.kr.attention_mobile.value.Values;
 
 public class Main_Configuration_Fragment extends Fragment {
@@ -100,7 +103,7 @@ public class Main_Configuration_Fragment extends Fragment {
         try {
 
 
-            mGlideRequestManager.load(data.getData()).apply(RequestOptions.bitmapTransform(new CircleCrop())).thumbnail(0.1f).into(fourth_fragment_profile_Item_Image);
+            mGlideRequestManager.load(data.getData()).apply(RequestOptions.bitmapTransform(new CircleCrop())).into(fourth_fragment_profile_Item_Image);
 
             //프로필사진 올리기
 
@@ -111,12 +114,19 @@ public class Main_Configuration_Fragment extends Fragment {
             Bitmap image_bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), data.getData());
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            image_bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+            image_bitmap.compress(Bitmap.CompressFormat.JPEG, 10, baos);
 
             byte[] profile_data = baos.toByteArray();
+            Handler handler = new MainActivity.MyHandler((MainActivity) getActivity());
+            Message message = new Message();
+            MainActivity.users.get(Values.myUUID).setProfileData(profile_data);
 
-
-            //////////////////////////////////////////////////파이어베이스 사진 올리기 end
+            Bundle bundle = new Bundle();
+            bundle.putInt("message",Values.PROFILE_INSERT);
+            message.setData(bundle);
+            message.obj = profile_data;
+            MainActivity.isDataChanged = true;
+            handler.sendMessage(message);
 
         } catch (Exception e) {
             Log.e("test", e.getMessage());
@@ -126,6 +136,9 @@ public class Main_Configuration_Fragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        User user = MainActivity.users.get(Values.myUUID);
+        if(user != null && user.getProfileData() != null)
+            mGlideRequestManager.load(user.getProfileData()).apply(RequestOptions.bitmapTransform(new CircleCrop())).into(fourth_fragment_profile_Item_Image);
 
     }
 

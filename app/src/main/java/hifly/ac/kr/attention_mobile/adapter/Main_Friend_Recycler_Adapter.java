@@ -79,24 +79,6 @@ public class Main_Friend_Recycler_Adapter extends RecyclerView.Adapter<RecyclerV
         }
         return null;
     }
-
-  /*  public void use_firebase_change_image(final User user, final Main_Friend_ViewHolder holder ){
-        storageRef = storage.getReferenceFromUrl("gs://attention-469ab.appspot.com/" + user.getUuid() + "/profile/profile.jpg");
-        storageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-            @Override
-            public void onSuccess(Uri downloadUrl) {
-
-                Log.i(Values.TAG, downloadUrl + " " + downloadUrl.getEncodedPath() + " #######################33");
-                Glide.with(context).load(downloadUrl).apply(RequestOptions.bitmapTransform(new CircleCrop())).thumbnail(0.1f).into(holder.imageView);
-            }
-
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                holder.imageView.setImageResource(user.getIcon());
-            }
-        });
-    }*/
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder viewholder, int position) {
         if(viewholder instanceof Main_Friend_ViewHolder) {
@@ -104,7 +86,11 @@ public class Main_Friend_Recycler_Adapter extends RecyclerView.Adapter<RecyclerV
             final User user = arrayList.get(position);
             //holder.imageView.setImageResource(user.getIcon());
             /*프로필사진 변경부분*/
-            Glide.with(context).load(R.drawable.main_friend_basic_icon).into(holder.imageView);
+            if(user.getProfileData() == null || user.getProfileData().length == 0)
+                Glide.with(context).load(R.drawable.main_friend_basic_icon).apply(RequestOptions.bitmapTransform(new CircleCrop())).into(holder.imageView);
+            else
+                Glide.with(context).load(user.getProfileData()).apply(RequestOptions.bitmapTransform(new CircleCrop())).into(holder.imageView);
+
             holder.nameTextView.setText(user.getName());
             holder.nameTextView.setTypeface(typeface);
             holder.stateTextView.setText(user.getStateMessage());

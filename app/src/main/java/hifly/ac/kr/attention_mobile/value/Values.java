@@ -12,6 +12,7 @@ import hifly.ac.kr.attention_mobile.R;
 // 정수 interface
 public class Values {
     public static final String TAG = "KKKK";
+    public static final String SPLIT_MESSAGE = "@SEGMENT@";
 
     /*SERVICE VALUES*/
     public static final int SERVICE_HANDLER_ENROLL = -1994;
@@ -21,7 +22,7 @@ public class Values {
     /*SERVER CONNECTION*/
     public static final String SERVER_IP = "223.194.156.150";
     public static final int FILE_SERVER_PORT = 10035;
-    public static final int MESSAGE_SERVER_PORT = 10036;;
+    public static final int MESSAGE_SERVER_PORT = 10036;
 
     /*SERVER MESSAGE PROTOCOL*/
     public static final String USER_ENROLL_PROTOCOL = "USER_ENROLL_PROTOCOL";
@@ -41,14 +42,19 @@ public class Values {
     //준희추가 프로토콜
     public static final String PROFILE_INSERT_PROTOCOL = "PROFILE_INSERT_PROTOCOL";
     public static final String PROFILE_GET_PROTOCOL = "PROFILE_GET_PROTOCOL";
+    public static final String ROOM_IN_PROTOCOL = "ROOM_IN_PROTOCOL";
     public static final String USER_REMOVE_PROTOCOL = "USER_REMOVE_PROTOCOL";
     public static final String ROOM_REMOVE_PROTOCOL = "ROOM_REMOVE_PROTOCOL";
     public static final String ROOM_FAIL_PROTOCOL = "ROOM_FAIL_PROTOCOL";
     public static final String ROOM_FILE_PROTOCOL = "ROOM_FILE_PROTOCOL";
     public static final String PROFILE_INSERT_PERFORM = "PROFILE_INSERT_PERFORM";
     public static final String PROFILE_GO = "PROFILE_GO";
+    public static final int PROFILE_INSERT = 40;
+    public static final int CREATE_ROOM = 43;
+    public static final int WRITE_OBJECT = 41;
 
-    public static final String SPLIT_MESSAGE = "@SEGMENT@";
+
+
 
     public static final int USER_ENROLL_CHECK = 1000;
     public static final int USER_FRIENDS_REQUEST = 1001;

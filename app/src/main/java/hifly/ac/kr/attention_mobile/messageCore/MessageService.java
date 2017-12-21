@@ -20,7 +20,6 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.PowerManager;
 import android.os.RemoteException;
-import android.os.StrictMode;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
@@ -30,9 +29,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 
 import hifly.ac.kr.attention_mobile.R;
 import hifly.ac.kr.attention_mobile.adapter_item.ChatActivity_RecyclerView_Item;
@@ -147,6 +144,32 @@ public class MessageService extends Service {
         }
 
     }
+    public void sendProfileData(final byte[] imageData){
+        /*String message = Values.PROFILE_INSERT_PROTOCOL + Values.SPLIT_MESSAGE + Values.myUUID +
+                Values.SPLIT_MESSAGE + Values.myTel + Values.SPLIT_MESSAGE;
+        Log.i(Values.TAG,"SEND_PROFILE_DATA : " + message);*/
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Socket socket = new Socket(Values.SERVER_IP,Values.FILE_SERVER_PORT);
+                    DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+                    DataInputStream dis = new DataInputStream(socket.getInputStream());
+                    Log.i(Values.TAG,"PROFILE INSERT START!");
+                    dos.writeUTF(Values.PROFILE_INSERT_PROTOCOL + Values.SPLIT_MESSAGE + Values.myUUID + Values.SPLIT_MESSAGE + imageData.length);
+                    Log.i(Values.TAG,"PROFILE INSERT PROTOCOL!");
+                    dos.write(imageData,0,imageData.length);
+                    Log.i(Values.TAG,"PROFILE INSERT SUCCESS!");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }).start();
+        //startFileSocket();
+        //messageThread.sendMessage(message);
+
+    }
     // Service handler
     private class RemoteHandler extends Handler {
 
@@ -167,6 +190,12 @@ public class MessageService extends Service {
                     break;
                 case Values.CHATTING_MESSAGE_SEND:
                     send_Message_Item((ChatActivity_RecyclerView_Item) msg.obj);
+                    break;
+                case Values.CREATE_ROOM:
+                    messageThread.sendMessage((String)msg.obj);
+                    break;
+                case Values.PROFILE_INSERT:
+                    sendProfileData((byte [])msg.obj);
                     break;
                 case Values.START_CALL:
                     Log.i(Values.TAG, "전화 들옴~~~~~~~~~~~~~~~~~~");

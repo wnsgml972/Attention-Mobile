@@ -15,6 +15,9 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.bumptech.glide.request.RequestOptions;
+
+import java.util.ArrayList;
+
 import hifly.ac.kr.attention_mobile.R;
 import hifly.ac.kr.attention_mobile.data.User;
 import hifly.ac.kr.attention_mobile.value.Values;
@@ -34,29 +37,36 @@ public class Main_Friend_Info_Activity extends AppCompatActivity {
         stateTextView = (TextView) findViewById(R.id.main_friend_info_state_textView);
         profileView = (ImageView) findViewById(R.id.activity_main_friend_profile);
 
-        callFab = (FloatingActionButton)findViewById(R.id.main_friend_info_call_fab);
+        callFab = (FloatingActionButton) findViewById(R.id.main_friend_info_call_fab);
         messageFab = (FloatingActionButton) findViewById(R.id.main_friend_info_message_fab);
-        User user = (User)getIntent().getSerializableExtra("object");
-        if(user != null){
+        User user = (User) getIntent().getSerializableExtra("object");
+        if (user != null) {
             nameTextView.setText(user.getName());
             stateTextView.setText(user.getStateMessage());
-        }
-        else{
+            if (user.getProfileData() != null) {
+                Glide.with(this).load(user.getProfileData())
+                        .apply(RequestOptions.bitmapTransform(new CircleCrop()))
+                        .into((profileView));
+            }
+        } else {
             Glide.with(this).load(R.drawable.main_friend_basic_icon)
                     .apply(RequestOptions.bitmapTransform(new CircleCrop()))
                     .into((profileView));
         }
     }
 
-    public void call(View v){
+    public void call(View v) {
       /*  Intent intent = new Intent(getApplicationContext(), Main_Friend_Call_Activity.class);
         intent.putExtra("object",(User)getIntent().getSerializableExtra("object"));
         startActivity(intent);*/
     }
 
-    public void message(View v){
+    public void message(View v) {
+        ArrayList<String> users = new ArrayList<>();
+        users.add(((User) getIntent().getSerializableExtra("object")).getUuid());
         Intent intent = new Intent(getApplicationContext(), Main_Friend_Message_Activity.class);
-        intent.putExtra("object",(User)getIntent().getSerializableExtra("object"));
+        //intent.putExtra("object",(User)getIntent().getSerializableExtra("object"));
+        intent.putExtra("room", ((User)getIntent().getSerializableExtra("object")).getP2PChatUUID());
         startActivity(intent);
     }
 

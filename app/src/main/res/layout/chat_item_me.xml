@@ -1,67 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/myItemKing"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:clickable="true"
     android:focusable="true"
+    android:padding="10dp"
+    android:paddingTop="20dp"
+    android:paddingBottom="20dp"
     android:onClick="onClick">
 
-    <LinearLayout
+
+    <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="right"
-        android:padding="5dp">
+        android:orientation="horizontal">
 
-
-        <FrameLayout
+        <TextView
+            android:id="@+id/messageTimeTextView_me"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingRight="5dp">
+            android:layout_gravity="end"
+            android:layout_marginEnd="10dp"
+            android:textSize="10sp"
+            android:layout_alignBottom="@+id/messageContentRelativeLayout_me"
+            android:layout_toStartOf="@+id/messageContentRelativeLayout_me"/>
+
+        <RelativeLayout
+            android:id="@+id/messageContentRelativeLayout_me"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="0dp"
+            android:paddingEnd="10dp"
+            android:layout_alignParentEnd="true">
             <TextView
-                android:id="@+id/messageTimeTextView_me"
+                android:id="@+id/chat_me_item_content"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="40dp"
-                android:layout_gravity="right"
-                android:text="dsf"/>
-            <RelativeLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="right"
-
-                android:orientation="vertical">
-
-
-                <TextView
-                    android:id="@+id/chat_me_item_content"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerInParent="true"
-                    android:layout_marginLeft="16dp"
-                    android:background="@drawable/speech_bubble_me"
-                    android:maxWidth="200dp"
-                    android:paddingBottom="5dp"
-                    android:paddingLeft="8dp"
-                    android:paddingRight="8dp"
-                    android:paddingTop="5dp"
-                    android:text="asd"
-                    android:textColor="@color/color_WHITE"
-                    android:textSize="18dp" />
-
-                <ImageView
-                    android:id="@+id/chat_image_item_content_me"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerInParent="true"
-                    android:layout_marginLeft="16dp"
-                    android:layout_marginTop="39dp" />
-            </RelativeLayout>
-        </FrameLayout>
-
-    </LinearLayout>
-</RelativeLayout>
+                android:background="@drawable/speech_bubble_me"
+                android:maxWidth="200dp"
+                android:paddingBottom="5dp"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:paddingTop="5dp"
+                android:textColor="@color/color_WHITE"
+                android:textSize="16sp" />
+            <ImageView
+                android:id="@+id/chat_image_item_content_me"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_marginStart="16dp"
+                android:visibility="gone"
+                android:contentDescription="@string/app_name" />
+        </RelativeLayout>
+    </RelativeLayout>
+</LinearLayout>

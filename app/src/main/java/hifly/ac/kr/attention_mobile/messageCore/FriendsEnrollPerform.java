@@ -1,8 +1,10 @@
 package hifly.ac.kr.attention_mobile.messageCore;
 
 import android.os.Message;
+import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import hifly.ac.kr.attention_mobile.data.User;
 import hifly.ac.kr.attention_mobile.value.Values;
@@ -16,9 +18,10 @@ public class FriendsEnrollPerform implements SignalPerform {
     public void performAction(SignalKey signalKey, MessageService messageService) {
         Message msg = new Message();
         String splitMyFriends[] = signalKey.getBodyData().split(Values.SPLIT_MESSAGE);
-        ArrayList<User> myFriends = new ArrayList<>();//uuid name tel
+        HashMap<String, User> myFriends = new HashMap<>();//uuid name tel
         for (int i = 0; i < splitMyFriends.length; i++) {
-            myFriends.add(new User(splitMyFriends[i++], splitMyFriends[i++], splitMyFriends[i++],splitMyFriends[i++],splitMyFriends[i]));
+            myFriends.put(splitMyFriends[i],new User(splitMyFriends[i++], splitMyFriends[i++], splitMyFriends[i++],splitMyFriends[i++],splitMyFriends[i]));
+            //Log.i(Values.TAG,myFriends.get(i).toString());
         }
 
         msg.what = Values.USER_FRIENDS_RESPONSE;

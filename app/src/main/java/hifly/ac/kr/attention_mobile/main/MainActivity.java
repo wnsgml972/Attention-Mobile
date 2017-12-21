@@ -30,6 +30,8 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -37,11 +39,14 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.ref.WeakReference;
+import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import hifly.ac.kr.attention_mobile.R;
 import hifly.ac.kr.attention_mobile.data.Room;
 import hifly.ac.kr.attention_mobile.data.User;
+import hifly.ac.kr.attention_mobile.messageCore.FileRequestSocketThread;
 import hifly.ac.kr.attention_mobile.messageCore.MessageService;
 import hifly.ac.kr.attention_mobile.value.Values;
 
@@ -52,12 +57,13 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager viewPager;
     private TabLayout tabLayout;
     private static Main_Friend_Fragment mainFragment = new Main_Friend_Fragment();
-    private static Main_Configuration_Fragment mainFragment2 = new Main_Configuration_Fragment();
+    private static Main_Chat_Room_Fragment mainFragment2 = new Main_Chat_Room_Fragment();
     private static Main_Configuration_Fragment mainFragment3 = new Main_Configuration_Fragment();
     private Intent serviceIntent;   //@@
     private Messenger messenger;    //@@
-    public static ArrayList<User> users = new ArrayList<>();
-    public static ArrayList<Room> rooms = new ArrayList<>();
+    public static HashMap<String, User> users = new HashMap<String, User>();
+    public static ArrayList<Room> rooms = new ArrayList<Room>();
+    public static boolean isDataChanged = false;
     private CardView cardView;
 
     private ServiceConnection connection = new ServiceConnection() {            //@@
@@ -88,31 +94,21 @@ public class MainActivity extends AppCompatActivity {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case Values.USER_FRIENDS_RESPONSE:
-                    users = (ArrayList)msg.obj;
+                    users = (HashMap<String, User>)msg.obj;
+                    users.put(Values.myUUID,new User(Values.myUUID,Values.myName,Values.myTel,"안녕하세요 좋은하루에요~"));
                     cardView.setVisibility(View.GONE);
                     try {
-                        ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream(new File(getFilesDir(),"attentionTel.dat")));
-                        objectOutputStream.writeObject(users);
-                        objectOutputStream.close();
-                        Toast.makeText(getApplicationContext(), "object write success!!", Toast.LENGTH_SHORT).show();
+
+
                         ((ImageButton)findViewById(R.id.toolbar_item_configure)).setClickable(true);
+                        FileRequestSocketThread fileRequestSocketThread = new FileRequestSocketThread(mHandler);
+                        fileRequestSocketThread.start();
+
                         mainFragment.refresh();
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                     break;
-            }
-        }
-    }
-    public void remoteSendMessage(String data,int messageType) {
-        if (messenger != null) {
-            Message msg = new Message();
-            msg.what = messageType;
-            msg.obj = data;
-            try {
-                messenger.send(msg);
-            } catch (RemoteException e) {
-                e.printStackTrace();
             }
         }
     }
@@ -136,16 +132,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void getDataInstance() {
-        ArrayList arrayList = null;
+        HashMap<String, User> usersHashMap = null;
         try {
             ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(new File(getFilesDir(),"attentionTel.dat")));
 
-            arrayList = (ArrayList) objectInputStream.readObject();
+            usersHashMap = (HashMap<String, User>) objectInputStream.readObject();
 
-            if (arrayList == null) {
+            ObjectInputStream objectInputStream2 = new ObjectInputStream(new FileInputStream(new File(getFilesDir(),"attentionRoom.dat")));
+
+            rooms = (ArrayList<Room>) objectInputStream2.readObject();
+            if (usersHashMap == null) {
 
             } else {
-                users = (ArrayList<User>) arrayList;
+                users = (HashMap<String, User>) usersHashMap;
 
             }
         } catch (Exception e) {
@@ -216,6 +215,11 @@ public class MainActivity extends AppCompatActivity {
             public void onTabSelected(TabLayout.Tab tab) {
                 int selectedColor = ContextCompat.getColor(getApplicationContext(), R.color.color_Black);
                 tab.getIcon().setColorFilter(selectedColor, PorterDuff.Mode.SRC_IN);
+                if(isDataChanged) {
+                    isDataChanged = false;
+                    mainFragment.notifyAdapterChanged();
+                }
+                mainFragment2.notifiChanged();
             }
 
             @Override
@@ -250,14 +254,54 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void handleMessage(Message msg) {
-            int message = msg.getData().getInt("message");
-            switch (message) {
+            int myMessage = msg.getData().getInt("message");
+            switch (myMessage) {
                 case CHANGE_FRIEND_INFO:
                     Intent intent = new Intent(mWeakActivity.get().getApplicationContext(), Main_Friend_Info_Activity.class);
                     intent.putExtra("object", msg.getData().getSerializable("object"));
                     mWeakActivity.get().startActivity(intent);
                     break;
-                case PROGRESS_END:
+                case Values.PROFILE_INSERT:
+                    Message message = new Message();
+                    message.what = Values.PROFILE_INSERT;
+                    message.obj = (byte[])msg.obj;
+                    try {
+                       mWeakActivity.get().messenger.send(message);
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream(new File(mWeakActivity.get().getFilesDir(),"attentionTel.dat")));
+                        objectOutputStream.writeObject(users);
+                        objectOutputStream.flush();
+                        objectOutputStream.close();
+                        File file = new File(mWeakActivity.get().getFilesDir(),"attentionRoom.dat");
+                        ObjectOutputStream objectOutputStream2 = new ObjectOutputStream(new FileOutputStream(file));
+                        objectOutputStream2.writeObject(rooms);
+                        objectOutputStream2.flush();
+                        objectOutputStream2.close();
+                        Toast.makeText(mWeakActivity.get().getApplicationContext(), "object write success!!", Toast.LENGTH_SHORT).show();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    break;
+                case Values.WRITE_OBJECT:
+                    try {
+                        ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream(new File(mWeakActivity.get().getFilesDir(),"attentionTel.dat")));
+                        objectOutputStream.writeObject(users);
+                        objectOutputStream.flush();
+                        objectOutputStream.close();
+                        ObjectOutputStream objectOutputStream2 = new ObjectOutputStream(new FileOutputStream(new File(mWeakActivity.get().getFilesDir(),"attentionRoom.dat")));
+                        objectOutputStream2.writeObject(rooms);
+                        objectOutputStream2.flush();
+                        objectOutputStream2.close();
+                        Toast.makeText(mWeakActivity.get().getApplicationContext(), "object write success!!", Toast.LENGTH_SHORT).show();
+                        mainFragment.notifyAdapterChanged();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     break;
                 case SAY_WORD:
                     break;

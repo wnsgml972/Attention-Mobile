@@ -5,12 +5,8 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import hifly.ac.kr.attention_mobile.adapter.Main_Chat_Room_RecyclerView_Adapter;
 import hifly.ac.kr.attention_mobile.adapter_item.Main_Chat_Room_RecyclerView_Item;
-
-*/
-/**
- * Created by hscom-018 on 2017-12-07.
- *//*
 
 
 public class ChatRoomWrapper {

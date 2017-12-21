@@ -21,7 +21,7 @@ public class Call_Receive_Thread extends Thread{
     private AudioTrack mAudioTrack;
     private byte audioBuffer[];
     private int BUFFER_SIZE;
-
+    public boolean isrunning = true;
     public Call_Receive_Thread(String userIP,int userPort){
         Log.i(Values.TAG,userIP + " " + userPort + "@@@RECEIVE");
         this.connect_IP = userIP;
@@ -36,7 +36,7 @@ public class Call_Receive_Thread extends Thread{
         }catch (Exception e){
             e.getStackTrace();
         }
-        while(true) {
+        while(isrunning) {
             try {
                 datagramSocket.receive(new DatagramPacket(audioBuffer, 0, BUFFER_SIZE));
                 Log.i(Values.TAG,"Listen" + audioBuffer[0] + " " + audioBuffer[1] + " " + audioBuffer[2]);
@@ -51,6 +51,8 @@ public class Call_Receive_Thread extends Thread{
                 return;
             }
         }
+        datagramSocket.close();
+
     }
 
     public void initAudioSetting() {

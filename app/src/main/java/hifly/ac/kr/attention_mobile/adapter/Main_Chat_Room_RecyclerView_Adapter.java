@@ -1,4 +1,3 @@
-/*
 package hifly.ac.kr.attention_mobile.adapter;
 
 import android.content.Context;
@@ -11,32 +10,29 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import hifly.ac.kr.attention_mobile.R;
-import hifly.ac.kr.attention_mobile.adapter_item.Main_Chat_Room_RecyclerView_Item;
+import hifly.ac.kr.attention_mobile.adapter_item.ChatActivity_RecyclerView_Item;
+import hifly.ac.kr.attention_mobile.data.Room;
 import hifly.ac.kr.attention_mobile.data.User;
 import hifly.ac.kr.attention_mobile.interfaces.TestCallback;
+import hifly.ac.kr.attention_mobile.main.MainActivity;
+import hifly.ac.kr.attention_mobile.main.Main_Friend_Message_Activity;
 
-*/
-/**
- * Created by User on 2017-10-14.
- *//*
 
 
 public class Main_Chat_Room_RecyclerView_Adapter extends RecyclerView.Adapter<Main_Chat_Room_RecyclerView_Adapter.ViewHolder> {
 
     private Context context;
-    private TestCallback testCallback;
-    private List<Main_Chat_Room_RecyclerView_Item> main_chat_room_recyclerView_items;
+    private List<Room> chattingRooms;
     private RecyclerView second_RecyclerView;
 
-    private Main_Chat_Room_RecyclerView_Adapter main_chat_room_recyclerView_adapter = this;
 
-    public Main_Chat_Room_RecyclerView_Adapter(Context context, List<Main_Chat_Room_RecyclerView_Item> main_chat_room_recyclerView_items, TestCallback testCallback) {
+    public Main_Chat_Room_RecyclerView_Adapter(Context context, ArrayList<Room> chattingRooms){
         this.context = context;
-        this.main_chat_room_recyclerView_items = main_chat_room_recyclerView_items;
-        this.testCallback = testCallback;
+        this.chattingRooms = chattingRooms;
     }
 
     @Override
@@ -49,14 +45,34 @@ public class Main_Chat_Room_RecyclerView_Adapter extends RecyclerView.Adapter<Ma
 
     @Override
     public void onBindViewHolder(ViewHolder holder, final int position) {
-        holder.name.setText(main_chat_room_recyclerView_items.get(position).getName());
-        holder.content.setText(main_chat_room_recyclerView_items.get(position).getLast_content());
-        holder.time.setText(main_chat_room_recyclerView_items.get(position).getTime());
+        Room room = chattingRooms.get(position);
+        StringBuilder builder = new StringBuilder();
+        for(String userUUID : room.getUserUUIDs()) {
+            User user = MainActivity.users.get(userUUID);
+            if(user != null) {
+                builder.append(user.getName()).append(", ");//방 이름만드는부분
+            }
+        }
+        if(builder.length()>=2)
+            builder.delete(builder.length()-2,builder.length());
+        holder.name.setText(builder.toString());//만들어서 넣기
+        //방에서 채팅내용 가져오고 시간도 가져오기
+        if(room.getItems().size()==0){
+            holder.content.setText("비어있음");
+            holder.time.setText("비어있음");
+        }
+        else{
+            ChatActivity_RecyclerView_Item chatActivity_recyclerView_item= room.getItems().get(room.getItems().size()-1);
+            holder.content.setText(chatActivity_recyclerView_item.getChat_content());
+            holder.time.setText(chatActivity_recyclerView_item.getTime());
+        }
+
+
     }
 
     @Override
     public int getItemCount() {
-        return main_chat_room_recyclerView_items.size();
+        return chattingRooms.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -83,24 +99,9 @@ public class Main_Chat_Room_RecyclerView_Adapter extends RecyclerView.Adapter<Ma
                     if (getAdapterPosition() != RecyclerView.NO_POSITION) {
                         int position = getAdapterPosition();
                         Intent intent = new Intent(view.getContext(), Main_Friend_Message_Activity.class);
-                        */
-/* 채팅방 클릭했을 시 *//*
-
-                        Log.i("click", main_chat_room_recyclerView_items.get(position).getChatRoomName());
-                        intent.putExtra("chat_room_name", main_chat_room_recyclerView_items.get(position).getChatRoomName());
-                     */
-/*   for(int i=0; i< MainActivity.users.size(); i++){
-                            if(main_chat_room_recyclerView_items.get(position).getChatRoomName().contains()){
-
-                            }
-                        }*//*
-
-                        intent.putExtra("sender",main_chat_room_recyclerView_items.get(position).getName());
-                        intent.putExtra("object",main_chat_room_recyclerView_items.get(position).getUser());
-
+                        //intent.putExtra("object", chattingRooms.get(position).getUserUUIDs());
+                        intent.putExtra("room", chattingRooms.get(position).getRoomUUID());
                         view.getContext().startActivity(intent);
-
-
                         break;
                     }
             }
@@ -108,4 +109,3 @@ public class Main_Chat_Room_RecyclerView_Adapter extends RecyclerView.Adapter<Ma
     }
 }
 
-*/

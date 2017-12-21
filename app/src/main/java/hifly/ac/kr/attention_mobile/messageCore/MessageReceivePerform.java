@@ -31,13 +31,16 @@ public class MessageReceivePerform implements SignalPerform {
         ChatActivity_RecyclerView_Item item = new ChatActivity_RecyclerView_Item(splitMyFriends[0],splitMyFriends[1],splitMyFriends[2],splitMyFriends[3],splitMyFriends[4]);
 
         Log.i(Values.TAG, splitMyFriends[0] + " " + splitMyFriends[1]+ " " +splitMyFriends[2]+ " " + splitMyFriends[3]+ " " +splitMyFriends[4]);
-        if (item.getSender_uuid().equals(Values.myUUID)) {
+        if (item.getSender_uuid().equals(Values.myUUID) || item.getSender_uuid().equals("Server")) {
             item.setItemViewType(1);//1이 오른쪽(내거)
         } else {
             item.setItemViewType(0);
         }
+        boolean isRoomFind = false;
         for(Room room : MainActivity.rooms){
             if(room.getRoomUUID().equals(splitMyFriends[4])){
+
+                isRoomFind = true;
                 if(room.isRoomVisible()){
                     Message message = new Message();
                     message.what = Values.CHATTING_MESSAGE_RECEIVE;
@@ -47,9 +50,8 @@ public class MessageReceivePerform implements SignalPerform {
                 }
                 else{
                     Log.i(Values.TAG,"MESSAGE_RECEIVE_PERFORM : MESSAGE ACTIVITY GONE");
-                    ObjectInputStream objectInputStream = null;
                     try {
-                        objectInputStream = new ObjectInputStream(new FileInputStream(new File(messageService.getFilesDir(),splitMyFriends[4])));
+                        ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(new File(messageService.getFilesDir(),splitMyFriends[4])));
                         Room thisRoom = (Room) objectInputStream.readObject();
                         thisRoom.addItem(item);
                         ObjectOutputStream objectOutputStream  = new ObjectOutputStream(new FileOutputStream(new File(messageService.getFilesDir(),splitMyFriends[4])));
@@ -62,6 +64,10 @@ public class MessageReceivePerform implements SignalPerform {
                     break;
                 }
             }
+        }
+        if (!isRoomFind){
+           Room room = new Room(splitMyFriends[4]);
+           MainActivity.rooms.add(room);
         }
      /*   if(Main_Friend_Message_Activity.isMessageActivityRunning){
             Log.i(Values.TAG,"MESSAGE_RECEIVE_PERFORM : MESSAGE ACTIVITY RUNNING");

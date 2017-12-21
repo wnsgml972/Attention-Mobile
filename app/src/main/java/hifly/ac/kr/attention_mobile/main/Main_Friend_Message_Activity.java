@@ -50,6 +50,8 @@ import hifly.ac.kr.attention_mobile.data.User;
 import hifly.ac.kr.attention_mobile.dialog.Main_Friend_Message_Dialog;
 import hifly.ac.kr.attention_mobile.messageCore.MessageService;
 import hifly.ac.kr.attention_mobile.value.Values;
+import hifly.ac.kr.attention_mobile.voiceCore.Call_Receive_Thread;
+import hifly.ac.kr.attention_mobile.voiceCore.Call_Thread;
 
 public class Main_Friend_Message_Activity extends AppCompatActivity implements View.OnClickListener {
     private EditText editText;
@@ -68,6 +70,10 @@ public class Main_Friend_Message_Activity extends AppCompatActivity implements V
     private String currentTime;
     private String P2PChatUUID;
     private Room room;
+    private ImageView imageView;
+    private boolean isCalling = false;
+    Call_Receive_Thread call_receive_thread;
+    Call_Thread call_thread;
     private ServiceConnection connection = new ServiceConnection() {            //@@
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
@@ -98,12 +104,11 @@ public class Main_Friend_Message_Activity extends AppCompatActivity implements V
 
                     ChatActivity_RecyclerView_Item item = (ChatActivity_RecyclerView_Item)msg.obj;
 
-                    for(User user : MainActivity.users){
-                        if(user.getUuid().equals(item.getSender_uuid())){
+                        User user = MainActivity.users.get(item.getSender_uuid());
+                        if(user != null){
                             item.setSender_name(user.getName());
-                            break;
                         }
-                    }
+
 
                     Log.i(Values.TAG,"MESSAGE ITEM SIZE : " + room.getItems().size());
                     //chatActivity_recyclerView_items.add(item);
@@ -165,7 +170,6 @@ public class Main_Friend_Message_Activity extends AppCompatActivity implements V
             objectOutputStream.flush();
             objectOutputStream.close();
             Toast.makeText(getApplicationContext(), "object write success!!", Toast.LENGTH_SHORT).show();
-            chatActivity_recyclerView_items.clear();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -252,15 +256,62 @@ public class Main_Friend_Message_Activity extends AppCompatActivity implements V
                 break;
             case R.id.main_friend_message_invite_friend:
                 Intent intent = new Intent(view.getContext(), Main_Friend_Message_Dialog.class);
-                startActivity(intent);
+                startActivityForResult(intent,Values.CREATE_ROOM);
                 break;
             case R.id.main_friend_message_voice_chat:
+                if(!isCalling) {
+                    isCalling=true;
+                String ip = "223.194.156.145";//용석ip 준희한테 깔거
+                int port = 10075;
+                Call_Receive_Thread call_receive_thread = new Call_Receive_Thread(ip,port);//10075
+                Call_Thread call_thread = new Call_Thread(ip,port+1);//10076
+                    /*String ip = "223.194.153.149";
+                    int port = 10076;
+                    call_receive_thread = new Call_Receive_Thread(ip, port);//10076
+                    call_thread = new Call_Thread(ip, port - 1);//10075*/
+                    call_receive_thread.start();
+                    call_thread.start();
+                    Toast.makeText(getApplicationContext(),"Voice Chat Start!",Toast.LENGTH_SHORT).show();
                 /*Intent mintent = new Intent(getApplicationContext(), Main_Friend_Call_Activity.class);
                 mintent.putExtra("object",(User)getIntent().getSerializableExtra("object"));
                 startActivity(mintent);*/
+                }
+                else{
+                    call_thread.isrunning = false;
+                    call_receive_thread.isrunning = false;
+                    isCalling=false;
+                    Toast.makeText(getApplicationContext(),"Voice Chat End!",Toast.LENGTH_SHORT).show();
+                }
                 break;
         }
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode == RESULT_OK){
+            if(requestCode == Values.CREATE_ROOM){
+                ArrayList<String> userUUIDs = (ArrayList<String>)data.getSerializableExtra("userUUIDs");
+                boolean isRoomExist = false;
+                String chatRoomUUID = data.getStringExtra("roomUUID");
+                for(Room room : MainActivity.rooms){
+                    if(room.getRoomUUID().equals(chatRoomUUID)){
+                        for (String userUUID : userUUIDs)
+                            room.addUser(userUUID);
+                        isRoomExist = true;
+                    }
+                }
+                if(!isRoomExist) {
+                    Room makeRoom = new Room(chatRoomUUID);
+                    for (String userUUID : userUUIDs)
+                        makeRoom.addUser(userUUID);
+                    MainActivity.rooms.add(makeRoom);
+                }
+                finish();
+            }
+        }
+    }
+
     public void updateCurrentTime(){
         long now = System.currentTimeMillis();
         date.setTime(now);
@@ -289,37 +340,60 @@ public class Main_Friend_Message_Activity extends AppCompatActivity implements V
     }
 
     private void init() {
-        User user = (User)getIntent().getSerializableExtra("object");
-        P2PChatUUID = user.getP2PChatUUID();
+        //User user = (User)getIntent().getSerializableExtra("object");
+        //ArrayList<String> userUUIDs = (ArrayList<String>)getIntent().getSerializableExtra("object");
+        //P2PChatUUID = user.getP2PChatUUID();
+        //P2PChatUUID = getIntent().getStringExtra("room");
+        /*if(userUUIDs.size() ==1){
+            P2PChatUUID = MainActivity.users.get(userUUIDs.get(0)).getP2PChatUUID();
+        }*/
+        ArrayList<String> userUUIDs = null;
+        P2PChatUUID = getIntent().getStringExtra("room");
+        boolean isRoomExist = false;
+        for(Room mroom : MainActivity.rooms) {
+            if (mroom.getRoomUUID().equals(P2PChatUUID)){
+                room = mroom;
+                userUUIDs = room.getUserUUIDs();
+                isRoomExist = true;
+                break;
+            }
+        }
+
         date = new Date();
         simpleDataFormat = new SimpleDateFormat("HH:mm",Locale.KOREA);
         chatActivity_recyclerView = (RecyclerView) findViewById(R.id.chat_activity_RecyclerView);
         editText = (EditText) findViewById(R.id.editText);
         messageSendbtn = (Button) findViewById(R.id.messageSendbtn);
 
-
         ObjectInputStream objectInputStream = null;
         try {
             objectInputStream = new ObjectInputStream(new FileInputStream(new File(getFilesDir(),P2PChatUUID)));
-            Room thisroom = (Room) objectInputStream.readObject();
+            room= (Room) objectInputStream.readObject();
 
-            if (thisroom == null) {
-                room = new Room(P2PChatUUID);
-                room.addUser(user.getUuid());
+            if (room == null) {
+
+                if(userUUIDs.size()==1) {
+                    room = new Room(P2PChatUUID);
+                    Toast.makeText(getApplicationContext(), "new p2p room!!", Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    room = new Room(P2PChatUUID);
+                    Toast.makeText(getApplicationContext(), "new multiple room!!", Toast.LENGTH_SHORT).show();
+                }
+                for(String uuid : userUUIDs)
+                    room.addUser(uuid);
                 MainActivity.rooms.add(room);
-                Toast.makeText(getApplicationContext(), "add new  success!!", Toast.LENGTH_SHORT).show();
+
 
             } else {
                 Toast.makeText(getApplicationContext(), "read room success!!", Toast.LENGTH_SHORT).show();
-                Log.i(Values.TAG,"ROOM UUID : " + thisroom.getRoomUUID() + "  THISROOM.GETUSERUUID.GET(0) : " + thisroom.getUserUUIDs().get(0));
-                boolean isRoomExist = false;
+                Log.i(Values.TAG,"ROOM UUID : " + room.getRoomUUID() + "  THISROOM.GETUSERUUID.GET(0) : " + room.getUserUUIDs().get(0));
 
-                room = thisroom;
+
                 for(int i=0; i<MainActivity.rooms.size(); i++){
                     Room mRoom = MainActivity.rooms.get(i);
                     if(mRoom.getRoomUUID().equals(P2PChatUUID)){
                         MainActivity.rooms.set(i, room);
-                        isRoomExist = true;
                         break;
                     }
                 }
@@ -330,10 +404,18 @@ public class Main_Friend_Message_Activity extends AppCompatActivity implements V
             }
         } catch (Exception e) {
             e.printStackTrace();
-            room = new Room(P2PChatUUID);
-            room.addUser(user.getUuid());
+           /* if(userUUIDs.size()==1) {
+                room = new Room(P2PChatUUID);
+                Toast.makeText(getApplicationContext(), "new p2p room!!", Toast.LENGTH_SHORT).show();
+            }
+            else{
+                room = new Room(P2PChatUUID);
+                Toast.makeText(getApplicationContext(), "new multiple room!!", Toast.LENGTH_SHORT).show();
+            }
+            for(String uuid : userUUIDs)
+                room.addUser(uuid);
             MainActivity.rooms.add(room);
-            Toast.makeText(getApplicationContext(), "add new room!!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "room Error!!", Toast.LENGTH_SHORT).show();*/
         }
 
         room.setRoomVisible(true);

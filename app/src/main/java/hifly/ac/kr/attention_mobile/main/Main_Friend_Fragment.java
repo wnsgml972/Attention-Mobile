@@ -14,7 +14,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.util.ArrayList;
 
 import hifly.ac.kr.attention_mobile.R;
 import hifly.ac.kr.attention_mobile.adapter.Main_Friend_Recycler_Adapter;
@@ -27,7 +26,7 @@ import hifly.ac.kr.attention_mobile.value.Values;
 
 public class Main_Friend_Fragment extends Fragment {
     private RecyclerView recyclerView;
-
+    private Main_Friend_Recycler_Adapter adapter;
     public Main_Friend_Fragment() {
 
     }
@@ -46,18 +45,20 @@ public class Main_Friend_Fragment extends Fragment {
     }
     public void refresh(){
         Handler handler = new MainActivity.MyHandler((MainActivity) getActivity());
-        Main_Friend_Recycler_Adapter adapter = new Main_Friend_Recycler_Adapter(getContext(), handler);
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences(Values.userInfo, Context.MODE_PRIVATE);
+        adapter = new Main_Friend_Recycler_Adapter(getContext(), handler);
         adapter.addUser(null);
-        adapter.addUser(new User(0, sharedPreferences.getString(Values.userName, "default"), "좋은 하루~", sharedPreferences.getString(Values.userUUID, null)));
+        //adapter.addUser(new User(Values.myName, "좋은 하루~", Values.myUUID));
+        adapter.addUser(MainActivity.users.get(Values.myUUID));
         adapter.addUser(null);
-        ArrayList<User> users = MainActivity.users;
-        for (int i = 0; i < users.size(); i++) {
-            adapter.addUser(users.get(i));
-
+        for (String userUUID : MainActivity.users.keySet()) {
+            if(!userUUID.equals(Values.myUUID))
+                adapter.addUser(MainActivity.users.get(userUUID));
         }
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity().getApplicationContext()));
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(adapter);
+    }
+    public void notifyAdapterChanged(){
+        adapter.notifyDataSetChanged();
     }
 
 
