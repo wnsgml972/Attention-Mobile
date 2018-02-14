@@ -1,3 +1,4 @@
 > # Attention-Mobile
 > ## Used Java</br>
-> Messenger Application used Firebase
+> Messenger Application
+> Android Client with Java Server (Attention-Server)
